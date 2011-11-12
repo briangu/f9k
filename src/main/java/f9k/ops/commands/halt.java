@@ -6,5 +6,6 @@ public class halt implements Command
   @Override
   public void exec(MatchContext context)
   {
+    context.halt();
   }
 }

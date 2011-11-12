@@ -8,7 +8,6 @@ import java.util.Map;
 public class modify implements Command
 {
   Map<String, Object> _values;
-
   int _idx;
 
   public modify(int idx, Map<String, Object> values)
