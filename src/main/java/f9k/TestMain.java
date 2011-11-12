@@ -266,7 +266,7 @@ public class TestMain
     onTheRock.addComplement(np4);
 
     behindTheCurtain = phraseFactory.createPrepositionPhrase("behind"); //$NON-NLS-1$
-np5 = phraseFactory.createNounPhrase("the", "curtain"); //$NON-NLS-1$ //$NON-NLS-2$
+    np5 = phraseFactory.createNounPhrase("the", "curtain"); //$NON-NLS-1$ //$NON-NLS-2$
     behindTheCurtain.addComplement(np5);
 
     inTheRoom = phraseFactory.createPrepositionPhrase("in"); //$NON-NLS-1$
