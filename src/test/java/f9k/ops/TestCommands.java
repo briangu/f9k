@@ -68,9 +68,10 @@ public class TestCommands extends TestCase
     testContext.OPS.literalize(new MemoryElement("goal", "type", null, "status", null));
     testContext.OPS.literalize(new MemoryElement("monkey", "action", null));
     testContext.OPS.make(new MemoryElement("goal", "type", "remove"));
-    testContext.OPS.make(new MemoryElement("monkey", "action", "eat"));
+    testContext.OPS.make(new MemoryElement("monkey", "action", "remove"));
     testContext.OPS.addRule(createGoalRuleWithTwoVar());
     testContext.OPS.addRule(createModifyGoalRule());
+    testContext.OPS.addRule(createModifyMonkeyRule());
     testContext.OPS.run();
   }
 
@@ -143,7 +144,19 @@ public class TestCommands extends TestCase
     production.add(new modify(0, "type", "eat"));
     production.add(new write("the goal is remove and changing to eat"));
 
-    return new Rule("goal_remove_with_two_var", query, production);
+    return new Rule("goal_modify_goal_remove", query, production);
+  }
+
+  private Rule createModifyMonkeyRule()
+  {
+    List<QueryElement> query = new ArrayList<QueryElement>();
+    query.add(new QueryElement("monkey", "action", "remove"));
+
+    List<Command> production = new ArrayList<Command>();
+    production.add(new modify(0, "action", "eat"));
+    production.add(new write("the monkey action was remove and changing to eat"));
+
+    return new Rule("goal_modify_monkey_action", query, production);
   }
 
   private class TestContext
