@@ -115,6 +115,12 @@ public class OPS
         return preparedRule.Specificity.compareTo(preparedRule1.Specificity);
       }
     });
+
+    _rules.clear();
+    for (PreparedRule preparedRule : _preparedRules)
+    {
+      _rules.add(preparedRule.Rule);
+    }
   }
 
   private Integer computeSpecificity(Rule rule)
