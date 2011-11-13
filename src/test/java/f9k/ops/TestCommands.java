@@ -5,6 +5,7 @@ import f9k.ops.commands.Command;
 import f9k.ops.commands.remove;
 import f9k.ops.commands.write;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,15 +43,17 @@ public class TestCommands extends TestCase
     MemoryElement goal = new MemoryElement("goal", values);
     testContext.OPS.literalize(goal);
 
-    testContext.OPS.make(new MemoryElement("goal", new HashMap<String, Object>() {{ put("type", "remove"); }}));
+    testContext.OPS.make(new MemoryElement("goal", new HashMap<String, Object>()
+    {{
+        put("type", "remove");
+      }}));
 
     testContext.OPS.addRule(createGoalRule());
 
     testContext.OPS.run(1);
   }
 
-/*
-  public void testMake()
+  public void testVars()
   {
     TestContext testContext = createContext();
 
@@ -60,13 +63,15 @@ public class TestCommands extends TestCase
     MemoryElement goal = new MemoryElement("goal", values);
     testContext.OPS.literalize(goal);
 
-    testContext.OPS.addRule(createWriteHelloWorldRule());
+    testContext.OPS.make(new MemoryElement("goal", new HashMap<String, Object>()
+    {{
+        put("type", "remove");
+      }}));
 
-    testContext.OPS.insert(new MemoryElement("start"));
+    testContext.OPS.addRule(createGoalRuleWithVar());
 
     testContext.OPS.run(1);
   }
-*/
 
   private TestContext createContext()
   {
@@ -89,6 +94,19 @@ public class TestCommands extends TestCase
     return new Rule("goal_remove", query, production);
   }
 
+  private Rule createGoalRuleWithVar()
+  {
+    List<QueryPair> queryPairs = new ArrayList<QueryPair>();
+    queryPairs.add(new QueryPair("type", "$type"));
+    List<QueryElement> query = new ArrayList<QueryElement>();
+    query.add(new QueryElement("goal", queryPairs));
+
+    List<Command> production = new ArrayList<Command>();
+    production.add(new remove(0));
+    production.add(new write("hello, $type", Arrays.asList("$type")));
+
+    return new Rule("goal_remove_with_var", query, production);
+  }
 
   private Rule createWriteHelloWorldRule()
   {
