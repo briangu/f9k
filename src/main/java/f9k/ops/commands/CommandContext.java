@@ -30,7 +30,7 @@ public class CommandContext
 
   public void remove(int idx)
   {
-    if (idx > _elements.size())
+    if (idx >= _elements.size())
     {
       throw new IllegalArgumentException(String.format("idx %d > match set", idx));
     }
