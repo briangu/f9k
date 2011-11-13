@@ -2,13 +2,13 @@ package f9k.ops;
 
 
 import f9k.ops.commands.Command;
+import f9k.ops.commands.CommandContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class OPS
 {
@@ -77,9 +77,11 @@ public class OPS
         break;
       }
 
-      for (Command cmd : match.Production)
+      CommandContext context = new CommandContext(this, match.Elements, match.Vars);
+
+      for (Command cmd : match.Rule.Production)
       {
-        cmd.exec(null);
+        cmd.exec(context);
       }
     }
   }
@@ -157,20 +159,119 @@ public class OPS
 
     for (Rule rule : _rules)
     {
+      List<MemoryElement> elements = new ArrayList<MemoryElement>();
+      Map<String, Object> vars = new HashMap<String, Object>();
 
+      for (QueryElement qe : rule.Query)
+      {
+        boolean haveMatch = false;
+
+        for (MemoryElement me : _wm)
+        {
+          haveMatch = compare(qe, me, vars);
+          if (haveMatch)
+          {
+            elements.add(me);
+            break;
+          }
+        }
+
+        if (!haveMatch)
+        {
+          break;
+        }
+      }
+
+      if (elements.size() == rule.Query.size())
+      {
+        match = new Match(rule, elements, vars);
+        break;
+      }
     }
 
     return match;
   }
 
+  private boolean compare(QueryElement qe, MemoryElement me, Map<String, Object> vars)
+  {
+    if (!(me.Type.equals(qe.Type))) return false;
+
+    for (QueryPair qp : qe.QueryPairs)
+    {
+      Object val = me.Values.containsKey(qp.Key) ? me.Values.get(qp.Key) : null;
+
+      if (qp.Value == null)
+      {
+        if (val == null)
+        {
+          // match
+        }
+        else
+        {
+          return false;
+        }
+      }
+      else
+      {
+        if (val == null)
+        {
+          return false;
+        }
+        else
+        {
+          if (qp.Value instanceof String)
+          {
+            String strQpVal = (String)qp.Value;
+            if (strQpVal.startsWith("$"))
+            {
+              if (vars.containsKey(strQpVal))
+              {
+                if (!val.equals(vars.get(strQpVal)))
+                {
+                  return false;
+                }
+              }
+              else
+              {
+                // variable matches everything
+                vars.put(strQpVal, val);
+              }
+            }
+            else
+            {
+              String strVal = (String)val;
+              if (!strQpVal.equals(strVal))
+              {
+                return false;
+              }
+            }
+          }
+          else
+          {
+            if (!qp.Value.equals(val))
+            {
+              return false;
+            }
+          }
+          // match
+        }
+      }
+    }
+
+    return true;
+  }
+
   private class Match
   {
+    public Rule Rule;
     public List<MemoryElement> Elements;
-    public List<Command> Production;
-    public Match(List<MemoryElement> elements, List<Command> production)
+    public Map<String, Object> Vars;
+
+    public Match(Rule rule, List<MemoryElement> elements, Map<String, Object> vars)
     {
+      Rule = rule;
       Elements = elements;
-      Production = production;
+      Vars = vars;
     }
   }
 }
