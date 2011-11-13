@@ -115,7 +115,7 @@ public class OPS
       @Override
       public int compare(PreparedRule preparedRule, PreparedRule preparedRule1)
       {
-        return preparedRule.Specificity.compareTo(preparedRule1.Specificity);
+        return preparedRule1.Specificity.compareTo(preparedRule.Specificity);
       }
     });
 

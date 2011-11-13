@@ -7,7 +7,6 @@ import f9k.ops.commands.modify;
 import f9k.ops.commands.remove;
 import f9k.ops.commands.write;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import junit.framework.TestCase;

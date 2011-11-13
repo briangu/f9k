@@ -7,6 +7,8 @@ import f9k.ops.QueryElement;
 import f9k.ops.QueryPair;
 import f9k.ops.Rule;
 import f9k.ops.commands.Command;
+import f9k.ops.commands.CommandContext;
+import f9k.ops.commands.nlg;
 import f9k.ops.commands.remove;
 import f9k.ops.commands.write;
 import gov.nih.nlm.nls.lexCheck.Lib.LexRecord;
@@ -92,388 +94,47 @@ public class Main
     ops.literalize(createAVOTemplate());
     ops.literalize(createGoalTemplate());
 
-    Map<String, Object> values = new HashMap<String, Object>();
-    values.put("type", "generate");
-    ops.make(new MemoryElement("goal", values));
+    ops.make(new MemoryElement("goal", "type", "generate"));
+    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "object", "article"));
 
-    ops.addRule(createGoalRuleWithVar());
+    ops.addRule(createGenerateRule(nlgFactory, realiser, lexicon));
+    ops.addRule(createGenerateStopRule());
 
-    ops.run(1);
-
+    ops.run();
   }
 
   private static MemoryElement createAVOTemplate()
   {
-    Map<String, Object> values = new HashMap<String, Object>();
-    values.put("actor", null);
-    values.put("verb", null);
-    values.put("verb.tense", Tense.PRESENT);
-    values.put("object", null);
-    MemoryElement template = new MemoryElement("sphrase", values);
-    return template;
+    return new MemoryElement("sphrase", "actor", null, "verb", null, "verb.tense", Tense.PRESENT, "object", null);
   }
 
   private static MemoryElement createGoalTemplate()
   {
-    Map<String, Object> values = new HashMap<String, Object>();
-    values.put("goal", null);
-    values.put("type", null);
-    values.put("status", null);
-    MemoryElement template = new MemoryElement("goal", values);
-    return template;
+    return new MemoryElement("goal", "type", null);
   }
 
-  private static Rule createGoalRuleWithVar()
+  private static Rule createGenerateRule(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
   {
-    List<QueryPair> queryPairs = new ArrayList<QueryPair>();
-    queryPairs.add(new QueryPair("type", "$type"));
     List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", queryPairs));
+    query.add(new QueryElement("goal", "type", "generate"));
+    query.add(new QueryElement("sphrase", "actor", "$actor", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
+
+    List<Command> production = new ArrayList<Command>();
+    production.add(new write("actor: {0} verb: {1} object: {2}", "$actor", "$verb", "$object"));
+    production.add(new nlg(nlgFactory, realiser, lexicon));
+    production.add(new remove(1));
+
+    return new Rule("generate", query, production);
+  }
+
+  private static Rule createGenerateStopRule()
+  {
+    List<QueryElement> query = new ArrayList<QueryElement>();
+    query.add(new QueryElement("goal", "type", "generate"));
 
     List<Command> production = new ArrayList<Command>();
     production.add(new remove(0));
-    production.add(new write("hello, $type", "$type"));
 
-    return new Rule("goal_remove_with_var", query, production);
-  }
-
-
-  private void test123(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
-  {
-    LexRecord rec = new LexRecord();
-    rec.SetBase("cat");
-    WordElement cat = lexicon.getWord("running");
-    System.out.println(realiser.realise(cat).getRealisation());
-
-    standAloneTest(nlgFactory, realiser);
-
-    load(nlgFactory, realiser);
-
-    NPPhraseSpec mary = nlgFactory.createNounPhrase("Mary");
-    VPPhraseSpec chase = nlgFactory.createVerbPhrase("chase");
-    NPPhraseSpec monkey = nlgFactory.createNounPhrase("monkey");
-    monkey.setSpecifier("the");
-
-    SPhraseSpec p1 = nlgFactory.createClause();
-    p1.setSubject(mary);
-    p1.setVerb(chase);
-    p1.setObject(monkey);
-    p1.setFeature(Feature.TENSE, Tense.PAST);
-    SPhraseSpec p2 = nlgFactory.createClause();
-    p2.setSubject(monkey);
-    p2.setVerb("fight back");
-    p2.setFeature(Feature.TENSE, Tense.PAST);
-    SPhraseSpec p3 = nlgFactory.createClause();
-    p3.setSubject(mary);
-    p3.setVerb("be");
-    p3.setObject("nervous");
-    p3.setFeature(Feature.TENSE, Tense.PAST);
-
-    DocumentElement s1 = nlgFactory.createSentence(p1);
-    DocumentElement s2 = nlgFactory.createSentence(p2);
-    DocumentElement s3 = nlgFactory.createSentence(p3);
-
-    DocumentElement par1 = nlgFactory.createParagraph();
-    par1.addComponent(s1);
-    par1.addComponent(s2);
-    par1.addComponent(s3);
-
-    DocumentElement section = nlgFactory.createSection("The Trials and Tribulations of Mary and the Monkey");
-    section.addComponent(par1);
-
-    String output = realiser.realise(section).getRealisation();
-    System.out.println(output);
-
-    AdvPhraseSpec quickly = nlgFactory.createAdverbPhrase("quickly");
-    quickly.addModifier("very");
-//    chase.addPreModifier(quickly);
-//    chase.setFeature(Feature.NEGATED, true);
-
-    SPhraseSpec p = nlgFactory.createClause();
-    p.setSubject(mary);
-    p.setVerb(chase);
-    p.setObject(monkey);
-
-    NPPhraseSpec place = nlgFactory.createNounPhrase("park");
-    place.setSpecifier("the");
-
-    PPPhraseSpec pp = nlgFactory.createPrepositionPhrase();
-    pp.addComplement(place);
-    pp.setPreposition("in");
-
-    p.addComplement(pp);
-    p.addFrontModifier("despite her exhaustion");
-    p.setFeature(Feature.TENSE, Tense.PAST);
-
-    System.out.println(realiser.realiseSentence(p));
-
-    SPhraseSpec maryHungry = nlgFactory.createClause(mary, "be", "hungry");
-    maryHungry.setFeature(Feature.TENSE, Tense.PAST);
-    System.out.println(realiser.realiseSentence(new ClauseCoordinationRule().apply(p1, maryHungry)));
-    System.out.println(realiser.realiseSentence(new BackwardConjunctionReductionRule().apply(p1, maryHungry)));
-
-    chase.setFeature(Feature.NEGATED, false);
-    p.setFeature(Feature.INTERROGATIVE_TYPE, InterrogativeType.YES_NO);
-    p.setFeature(Feature.TENSE, Tense.PAST);
-
-    System.out.println(realiser.realiseSentence(p));
-
-    testAgg(nlgFactory, realiser);
-    testMe(nlgFactory, realiser);
-
-//    test1(nlgFactory, realiser);
-
-    testRun(nlgFactory, realiser);
-    testConnect(nlgFactory, realiser);
-    test1(nlgFactory, realiser);
-  }
-
-  private static void testRun(NLGFactory nlgFactory, Realiser realiser)
-  {
-    SPhraseSpec p = nlgFactory.createClause();
-    p.setSubject(nlgFactory.createNounPhrase("a", "run"));
-    p.setVerb("is");
-    p.setFeature(Feature.INTERROGATIVE_TYPE, InterrogativeType.WHAT_OBJECT);
-    System.out.println(realiser.realiseSentence(p));
-  }
-
-  private static void testConnect(NLGFactory nlgFactory, Realiser realiser)
-  {
-    SPhraseSpec p = nlgFactory.createClause();
-    p.setSubject(nlgFactory.createNounPhrase("Mary"));
-    VPPhraseSpec verb = nlgFactory.createVerbPhrase("connect");
-    verb.addModifier("to");
-    p.setVerb(verb);
-    p.setObject(nlgFactory.createNounPhrase("Bob"));
-    p.setFeature(Feature.TENSE, Tense.PAST);
-    System.out.println(realiser.realiseSentence(p));
-  }
-
-  // http://en.wikipedia.org/wiki/Aggregation_(linguistics)?oldid=0
-  private static void testAgg(NLGFactory nlgFactory, Realiser realiser)
-  {
-    SPhraseSpec s1 = nlgFactory.createClause("the man", "be", "hungry");
-    s1.setFeature(Feature.TENSE, Tense.PAST);
-    SPhraseSpec s2 = nlgFactory.createClause("the man", "buy", "an apple");
-    s2.setFeature(Feature.TENSE, Tense.PAST);
-    NLGElement result = new ClauseCoordinationRule().apply(s1, s2);
-    System.out.println(realiser.realiseSentence(result));
-  }
-
-  private static void test1(NLGFactory nlgFactory, Realiser realiser)
-  {
-    NPPhraseSpec myCat = nlgFactory.createNounPhrase("my cat");
-    NPPhraseSpec myDog = nlgFactory.createNounPhrase("my dog");
-    NPPhraseSpec myHorse = nlgFactory.createNounPhrase("my horse");
-    VPPhraseSpec like = nlgFactory.createVerbPhrase("like");
-    NPPhraseSpec fish = nlgFactory.createNounPhrase("fish");
-    NPPhraseSpec bigBones = nlgFactory.createNounPhrase("big bones");
-    NPPhraseSpec grass = nlgFactory.createNounPhrase("grass");
-
-    SPhraseSpec s1 = nlgFactory.createClause();
-    SPhraseSpec s2 = nlgFactory.createClause();
-    SPhraseSpec s3 = nlgFactory.createClause();
-
-    s1.setSubject(myCat);
-    s1.setVerb(like);
-    s1.setObject(fish);
-
-    s2.setSubject(myDog);
-    s2.setVerb(like);
-    s2.setObject(bigBones);
-
-    s3.setSubject(myHorse);
-    s3.setVerb(like);
-    s3.setObject(grass);
-
-    CoordinatedPhraseElement c = nlgFactory.createCoordinatedPhrase();
-    c.addCoordinate(s1);
-    c.addCoordinate(s2);
-    c.addCoordinate(s3);
-
-    String output = realiser.realiseSentence(c);
-    System.out.println(output);
-
-    myCat.setFeature(LexicalFeature.GENDER, Gender.FEMININE);
-    SPhraseSpec p = nlgFactory.createClause(myCat, "be", "happy");
-    SPhraseSpec q = nlgFactory.createClause(myCat, "eat", "fish");
-
-    q.setFeature(Feature.COMPLEMENTISER, "because");
-    q.setFeature(Feature.TENSE, Tense.PAST);
-    p.addComplement(q);
-
-    String output4 = realiser.realiseSentence(p);  //Realiser created earlier
-    System.out.println(output4);
-  }
-
-  private static void load(NLGFactory phraseFactory, Realiser realiser)
-  {
-    aggregator = new Aggregator();
-    aggregator.initialise();
-    coord = new ClauseCoordinationRule();
-    fcr = new ForwardConjunctionReductionRule();
-    bcr = new BackwardConjunctionReductionRule();
-
-    man = phraseFactory.createNounPhrase("the", "man"); //$NON-NLS-1$ //$NON-NLS-2$
-    woman = phraseFactory.createNounPhrase("the", "woman");  //$NON-NLS-1$//$NON-NLS-2$
-    dog = phraseFactory.createNounPhrase("the", "dog"); //$NON-NLS-1$ //$NON-NLS-2$
-    boy = phraseFactory.createNounPhrase("the", "boy"); //$NON-NLS-1$ //$NON-NLS-2$
-
-    beautiful = phraseFactory.createAdjectivePhrase("beautiful"); //$NON-NLS-1$
-    stunning = phraseFactory.createAdjectivePhrase("stunning"); //$NON-NLS-1$
-    salacious = phraseFactory.createAdjectivePhrase("salacious"); //$NON-NLS-1$
-
-    onTheRock = phraseFactory.createPrepositionPhrase("on"); //$NON-NLS-1$
-    np4 = phraseFactory.createNounPhrase("the", "rock"); //$NON-NLS-1$ //$NON-NLS-2$
-    onTheRock.addComplement(np4);
-
-    behindTheCurtain = phraseFactory.createPrepositionPhrase("behind"); //$NON-NLS-1$
-    np5 = phraseFactory.createNounPhrase("the", "curtain"); //$NON-NLS-1$ //$NON-NLS-2$
-    behindTheCurtain.addComplement(np5);
-
-    inTheRoom = phraseFactory.createPrepositionPhrase("in"); //$NON-NLS-1$
-    np6 = phraseFactory.createNounPhrase("the", "room"); //$NON-NLS-1$ //$NON-NLS-2$
-    inTheRoom.addComplement(np6);
-
-    underTheTable = phraseFactory.createPrepositionPhrase("under"); //$NON-NLS-1$
-    underTheTable.addComplement(phraseFactory.createNounPhrase("the", "table")); //$NON-NLS-1$ //$NON-NLS-2$
-
-    proTest1 = phraseFactory.createNounPhrase("the", "singer"); //$NON-NLS-1$ //$NON-NLS-2$
-    proTest2 = phraseFactory.createNounPhrase("some", "person"); //$NON-NLS-1$ //$NON-NLS-2$
-
-    kick = phraseFactory.createVerbPhrase("kick"); //$NON-NLS-1$
-    kiss = phraseFactory.createVerbPhrase("kiss"); //$NON-NLS-1$
-    walk = phraseFactory.createVerbPhrase("walk"); //$NON-NLS-1$
-    talk = phraseFactory.createVerbPhrase("talk"); //$NON-NLS-1$
-    getUp = phraseFactory.createVerbPhrase("get up"); //$NON-NLS-1$
-    fallDown = phraseFactory.createVerbPhrase("fall down"); //$NON-NLS-1$
-    give = phraseFactory.createVerbPhrase("give"); //$NON-NLS-1$
-    say = phraseFactory.createVerbPhrase("say"); //$NON-NLS-1$
-  }
-
-  private static void testMe(NLGFactory phraseFactory, Realiser realiser)
-  {
-    woman.setFeature(LexicalFeature.GENDER, Gender.FEMININE);
-
-    // the woman kissed the man behind the curtain
-    s1 = phraseFactory.createClause();
-    s1.setSubject(woman);
-    s1.setVerbPhrase(phraseFactory.createVerbPhrase("kiss"));
-    s1.setObject(man);
-    s1.addPostModifier(phraseFactory.createPrepositionPhrase("behind", phraseFactory.createNounPhrase("the", "curtain")));
-
-    // the woman kicked the dog on the rock
-    s2 = phraseFactory.createClause();
-    s2.setSubject(phraseFactory.createNounPhrase("the", "woman")); //$NON-NLS-1$
-    s2.setVerbPhrase(phraseFactory.createVerbPhrase("kick")); //$NON-NLS-1$
-    s2.setObject(phraseFactory.createNounPhrase("the", "dog"));
-    s2.addPostModifier(onTheRock);
-
-    // the woman kicked the dog behind the curtain
-    s3 = phraseFactory.createClause();
-    s3.setSubject(phraseFactory.createNounPhrase("the", "woman")); //$NON-NLS-1$
-    s3.setVerbPhrase(phraseFactory.createVerbPhrase("kick")); //$NON-NLS-1$
-    s3.setObject(phraseFactory.createNounPhrase("the", "dog"));
-    s3.addPostModifier(phraseFactory.createPrepositionPhrase("behind", phraseFactory.createNounPhrase("the", "curtain")));
-
-    // the man kicked the dog behind the curtain
-    s4 = phraseFactory.createClause();
-    s4.setSubject(man); //$NON-NLS-1$
-    s4.setVerbPhrase(phraseFactory.createVerbPhrase("kick")); //$NON-NLS-1$
-    s4.setObject(phraseFactory.createNounPhrase("the", "dog"));
-    s4.addPostModifier(behindTheCurtain);
-
-    // the girl kicked the dog behind the curtain
-    s5 = phraseFactory.createClause();
-    s5.setSubject(phraseFactory.createNounPhrase("the", "girl")); //$NON-NLS-1$
-    s5.setVerbPhrase(phraseFactory.createVerbPhrase("kick")); //$NON-NLS-1$
-    s5.setObject(phraseFactory.createNounPhrase("the", "dog"));
-    s5.addPostModifier(behindTheCurtain);
-
-    // the woman kissed the dog behind the curtain
-    s6 = phraseFactory.createClause();
-    s6.setSubject(phraseFactory.createNounPhrase("the", "woman")); //$NON-NLS-1$
-    s6.setVerbPhrase(phraseFactory.createVerbPhrase("kiss")); //$NON-NLS-1$
-    s6.setObject(phraseFactory.createNounPhrase("the", "dog"));
-    s6.addPostModifier(phraseFactory.createPrepositionPhrase("behind", phraseFactory.createNounPhrase("the", "curtain")));
-
-    List<NLGElement> elements = Arrays.asList((NLGElement)s3, s4);
-    List<NLGElement> result = coord.apply(elements);
-    System.out.println(realiser.realise(result.get(0)).getRealisation());
-
-    System.out.println(realiser.realise(bcr.apply(s3, s6)).getRealisation());
-    System.out.println(realiser.realise(fcr.apply(s3, s6)).getRealisation());
-  }
-
-  private static void standAloneTest(NLGFactory nlgFactory, Realiser realiser)
-  {
-    // below is a simple complete example of using simplenlg V4
-    // afterwards is an example of using simplenlg just for morphology
-
-    // set up
-
-    // create sentences
-    // 	"John did not go to the bigger park. He played football there."
-    NPPhraseSpec thePark = nlgFactory.createNounPhrase("the", "park");   // create an NP
-    AdjPhraseSpec bigp = nlgFactory.createAdjectivePhrase("big");        // create AdjP
-    bigp.setFeature(Feature.IS_COMPARATIVE, true);                       // use comparative form ("bigger")
-    thePark.addModifier(bigp);                                        // add adj as modifier in NP
-    // above relies on default placement rules.  You can force placement as a premodifier
-    // (before head) by using addPreModifier
-    PPPhraseSpec toThePark = nlgFactory.createPrepositionPhrase("to");    // create a PP
-    toThePark.setObject(thePark);                                     // set PP object
-    // could also just say nlgFactory.createPrepositionPhrase("to", the Park);
-
-    SPhraseSpec johnGoToThePark = nlgFactory.createClause("John",      // create sentence
-        "go", toThePark);
-
-    johnGoToThePark.setFeature(Feature.TENSE,Tense.PAST);              // set tense
-    johnGoToThePark.setFeature(Feature.NEGATED, true);                 // set negated
-
-    // note that constituents (such as subject and object) are set with setXXX methods
-    // while features are set with setFeature
-
-    DocumentElement sentence = nlgFactory							// create a sentence DocumentElement from SPhraseSpec
-        .createSentence(johnGoToThePark);
-
-    // below creates a sentence DocumentElement by concatenating strings
-    StringElement hePlayed = new StringElement("he played");
-    StringElement there = new StringElement("there");
-    WordElement football = new WordElement("football");
-
-    DocumentElement sentence2 = nlgFactory.createSentence();
-    sentence2.addComponent(hePlayed);
-    sentence2.addComponent(football);
-    sentence2.addComponent(there);
-
-    // now create a paragraph which contains these sentences
-    DocumentElement paragraph = nlgFactory.createParagraph();
-    paragraph.addComponent(sentence);
-    paragraph.addComponent(sentence2);
-
-    // create a realiser.  Note that a lexicon is specified, this should be
-    // the same one used by the NLGFactory
-
-    // realiser.setDebugMode(true);     // uncomment this to print out debug info during realisation
-    NLGElement realised = realiser.realise(paragraph);
-
-    System.out.println(realised.getRealisation());
-
-    // end of main example
-
-    // second example - using simplenlg just for morphology
-    // below is clumsy as direct access to morphology isn't properly supported in V4.2
-    // hopefully will be better supported in later versions
-
-    // get word element for "child"
-    WordElement word = (WordElement) nlgFactory.createWord("child", LexicalCategory.NOUN);
-    // create InflectedWordElement from word element
-    InflectedWordElement inflectedWord = new InflectedWordElement(word);
-    // set the inflected word to plural
-    inflectedWord.setPlural(true);
-    // realise the inflected word
-    String result = realiser.realise(inflectedWord).getRealisation();
-
-    System.out.println(result);
+    return new Rule("generate_stop", query, production);
   }
 }
