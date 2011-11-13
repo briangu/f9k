@@ -22,6 +22,27 @@ public class MemoryElement
     Values = new HashMap<String, Object>(values);
   }
 
+  public MemoryElement(String type, Object... values)
+  {
+    Type = type;
+
+    Values = new HashMap<String, Object>();
+    if (values.length > 0)
+    {
+      if (values.length % 2 != 0)
+      {
+        throw new IllegalArgumentException("values must be in the form: key, value, key, value, ...");
+      }
+
+      for (int i = 0; i < values.length; i += 2)
+      {
+        String key = values[i].toString();
+        Object val = values[i+1];
+        Values.put(key, val);
+      }
+    }
+  }
+
   public MemoryElement clone()
   {
     return new MemoryElement(Type, Values);

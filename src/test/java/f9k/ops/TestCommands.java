@@ -7,9 +7,7 @@ import f9k.ops.commands.write;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import junit.framework.TestCase;
 
 
@@ -18,8 +16,6 @@ public class TestCommands extends TestCase
   public void testBind()
   {
     TestContext testContext = createContext();
-
-
   }
 
   public void testNoValueMatchWrite()
@@ -37,17 +33,8 @@ public class TestCommands extends TestCase
   {
     TestContext testContext = createContext();
 
-    Map<String, Object> values = new HashMap<String, Object>();
-    values.put("type", null);
-    values.put("status", null);
-    MemoryElement goal = new MemoryElement("goal", values);
-    testContext.OPS.literalize(goal);
-
-    testContext.OPS.make(new MemoryElement("goal", new HashMap<String, Object>()
-    {{
-        put("type", "remove");
-      }}));
-
+    testContext.OPS.literalize(new MemoryElement("goal", "type", null, "status", null));
+    testContext.OPS.make(new MemoryElement("goal", "type", "remove"));
     testContext.OPS.addRule(createGoalRule());
 
     testContext.OPS.run(1);
@@ -56,20 +43,9 @@ public class TestCommands extends TestCase
   public void testVars()
   {
     TestContext testContext = createContext();
-
-    Map<String, Object> values = new HashMap<String, Object>();
-    values.put("type", null);
-    values.put("status", null);
-    MemoryElement goal = new MemoryElement("goal", values);
-    testContext.OPS.literalize(goal);
-
-    testContext.OPS.make(new MemoryElement("goal", new HashMap<String, Object>()
-    {{
-        put("type", "remove");
-      }}));
-
+    testContext.OPS.literalize(new MemoryElement("goal", "type", null, "status", null));
+    testContext.OPS.make(new MemoryElement("goal", "type", "remove"));
     testContext.OPS.addRule(createGoalRuleWithVar());
-
     testContext.OPS.run(1);
   }
 
@@ -83,10 +59,8 @@ public class TestCommands extends TestCase
 
   private Rule createGoalRule()
   {
-    List<QueryPair> queryPairs = new ArrayList<QueryPair>();
-    queryPairs.add(new QueryPair("type", "remove"));
     List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", queryPairs));
+    query.add(new QueryElement("goal", "type", "remove"));
 
     List<Command> production = new ArrayList<Command>();
     production.add(new remove(0));
@@ -96,14 +70,12 @@ public class TestCommands extends TestCase
 
   private Rule createGoalRuleWithVar()
   {
-    List<QueryPair> queryPairs = new ArrayList<QueryPair>();
-    queryPairs.add(new QueryPair("type", "$type"));
     List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", queryPairs));
+    query.add(new QueryElement("goal", "type", "$type"));
 
     List<Command> production = new ArrayList<Command>();
     production.add(new remove(0));
-    production.add(new write("hello, $type", Arrays.asList("$type")));
+    production.add(new write("hello, {0}", "$type"));
 
     return new Rule("goal_remove_with_var", query, production);
   }

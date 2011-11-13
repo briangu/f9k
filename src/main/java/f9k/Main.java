@@ -1,11 +1,22 @@
 package f9k;
 
 
+import f9k.ops.MemoryElement;
+import f9k.ops.OPS;
+import f9k.ops.QueryElement;
+import f9k.ops.QueryPair;
+import f9k.ops.Rule;
+import f9k.ops.commands.Command;
+import f9k.ops.commands.remove;
+import f9k.ops.commands.write;
 import gov.nih.nlm.nls.lexCheck.Lib.LexRecord;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import simplenlg.aggregation.Aggregator;
 import simplenlg.aggregation.BackwardConjunctionReductionRule;
 import simplenlg.aggregation.ClauseCoordinationRule;
@@ -76,6 +87,59 @@ public class Main
     NLGFactory nlgFactory = new NLGFactory(lexicon);
     Realiser realiser = new Realiser(lexicon);
 
+    OPS ops = new OPS();
+
+    ops.literalize(createAVOTemplate());
+    ops.literalize(createGoalTemplate());
+
+    Map<String, Object> values = new HashMap<String, Object>();
+    values.put("type", "generate");
+    ops.make(new MemoryElement("goal", values));
+
+    ops.addRule(createGoalRuleWithVar());
+
+    ops.run(1);
+
+  }
+
+  private static MemoryElement createAVOTemplate()
+  {
+    Map<String, Object> values = new HashMap<String, Object>();
+    values.put("actor", null);
+    values.put("verb", null);
+    values.put("verb.tense", Tense.PRESENT);
+    values.put("object", null);
+    MemoryElement template = new MemoryElement("sphrase", values);
+    return template;
+  }
+
+  private static MemoryElement createGoalTemplate()
+  {
+    Map<String, Object> values = new HashMap<String, Object>();
+    values.put("goal", null);
+    values.put("type", null);
+    values.put("status", null);
+    MemoryElement template = new MemoryElement("goal", values);
+    return template;
+  }
+
+  private static Rule createGoalRuleWithVar()
+  {
+    List<QueryPair> queryPairs = new ArrayList<QueryPair>();
+    queryPairs.add(new QueryPair("type", "$type"));
+    List<QueryElement> query = new ArrayList<QueryElement>();
+    query.add(new QueryElement("goal", queryPairs));
+
+    List<Command> production = new ArrayList<Command>();
+    production.add(new remove(0));
+    production.add(new write("hello, $type", "$type"));
+
+    return new Rule("goal_remove_with_var", query, production);
+  }
+
+
+  private void test123(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
+  {
     LexRecord rec = new LexRecord();
     rec.SetBase("cat");
     WordElement cat = lexicon.getWord("running");
