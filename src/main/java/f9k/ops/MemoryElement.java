@@ -1,6 +1,7 @@
 package f9k.ops;
 
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,11 @@ public class MemoryElement
 {
   public String Type;
   public Map<String, Object> Values;
+
+  public MemoryElement(String type)
+  {
+    this(type, Collections.<String, Object>emptyMap());
+  }
 
   public MemoryElement(String type, Map<String, Object> values)
   {

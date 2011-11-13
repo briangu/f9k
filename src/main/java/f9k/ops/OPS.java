@@ -3,6 +3,8 @@ package f9k.ops;
 
 import f9k.ops.commands.Command;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,26 +12,14 @@ import java.util.Map;
 
 public class OPS
 {
-  public enum Strategy
-  {
-    Lex
-  }
-
-  public List<MemoryElement> _wm = new ArrayList<MemoryElement>();
+  private List<MemoryElement> _wm = new ArrayList<MemoryElement>();
 
   private List<Rule> _rules = new ArrayList<Rule>();
+  private List<PreparedRule> _preparedRules = new ArrayList<PreparedRule>();
 
   private Map<String, MemoryElement> _templates = new HashMap<String, MemoryElement>();
 
   private boolean _halt = false;
-
-  public OPS create(
-    Strategy strategy,
-    List<Map<String, Object>> templates
-  )
-  {
-    return new OPS();
-  }
 
   public void reset()
   {
@@ -47,6 +37,16 @@ public class OPS
   public void literalize(MemoryElement template)
   {
     _templates.put(template.Type, template);
+  }
+
+  public void insert(MemoryElement element)
+  {
+    _wm.add(element);
+  }
+
+  public void remove(MemoryElement element)
+  {
+    _wm.remove(element);
   }
 
   public MemoryElement make(MemoryElement element)
@@ -69,7 +69,7 @@ public class OPS
 
   public void run(int steps)
   {
-    while (steps-- > 0)
+    while (steps-- > 0 && !_halt)
     {
       Match match = match();
       if (match == null)
@@ -84,14 +84,77 @@ public class OPS
     }
   }
 
+  public void addRules(List<Rule> rules)
+  {
+    _rules.addAll(rules);
+    prepareQueries();
+  }
+
   public void addRule(Rule rule)
   {
     _rules.add(rule);
+    prepareQueries();
+  }
+
+  private void prepareQueries()
+  {
+    _preparedRules.clear();
+
+    for (Rule rule : _rules)
+    {
+      PreparedRule preparedRule = new PreparedRule();
+      preparedRule.Rule = rule;
+      preparedRule.Specificity = computeSpecificity(rule);
+    }
+
+    Collections.sort(_preparedRules, new Comparator<PreparedRule>()
+    {
+      @Override
+      public int compare(PreparedRule preparedRule, PreparedRule preparedRule1)
+      {
+        return preparedRule.Specificity.compareTo(preparedRule1.Specificity);
+      }
+    });
+  }
+
+  private Integer computeSpecificity(Rule rule)
+  {
+    Integer specificity = 0;
+
+    for (QueryElement element : rule.Query)
+    {
+      Integer elementSpecificity = 0;
+
+      for (QueryPair queryPair : element.QueryPairs)
+      {
+        if (!(queryPair.Value instanceof String)) continue;
+        String strVal = (String) queryPair.Value;
+        if (!strVal.startsWith("$")) continue;
+        elementSpecificity++;
+      }
+
+      specificity += elementSpecificity;
+    }
+
+    return specificity;
+  }
+
+  private class PreparedRule
+  {
+    Rule Rule;
+    Integer Specificity;
   }
 
   private Match match()
   {
-    return null;
+    Match match = null;
+
+    for (Rule rule : _rules)
+    {
+
+    }
+
+    return match;
   }
 
   private class Match

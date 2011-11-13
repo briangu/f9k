@@ -35,7 +35,7 @@ public class CommandContext
       throw new IllegalArgumentException(String.format("idx %d > match set", idx));
     }
     MemoryElement element = _elements.get(idx);
-    _ops._wm.remove(element);
+    _ops.remove(element);
   }
 
   public MemoryElement make(MemoryElement element)

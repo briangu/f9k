@@ -18,13 +18,21 @@ public class TestCommands extends TestCase
 
   }
 
+  public void testWrite()
+  {
+    TestContext testContext = createContext();
+
+    testContext.OPS.addRule(createWriteHelloWorldRule());
+
+    testContext.OPS.insert(new MemoryElement("start"));
+
+    testContext.OPS.run();
+  }
+
   private TestContext createContext()
   {
     TestContext testContext = new TestContext();
 
-    testContext.OPS.addRule(createWriteHelloWorldRule());
-
-    testContext.OPS.insert("start");
 
     return testContext;
   }
