@@ -16,7 +16,7 @@ public class make implements Command
   }
 
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     Map<String, Object> values = new HashMap<String, Object>(_element.Values);
     values = context.resolveValues(values);

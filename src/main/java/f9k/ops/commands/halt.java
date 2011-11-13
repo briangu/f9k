@@ -4,7 +4,7 @@ package f9k.ops.commands;
 public class halt implements Command
 {
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     context.halt();
   }

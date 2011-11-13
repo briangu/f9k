@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class MatchContext
+public class CommandContext
 {
   Map<String, Object> _vars;
 
@@ -16,7 +16,7 @@ public class MatchContext
 
   OPS _ops;
 
-  public MatchContext(OPS ops, List<MemoryElement> elements, Map<String, Object> vars)
+  public CommandContext(OPS ops, List<MemoryElement> elements, Map<String, Object> vars)
   {
     _ops = ops;
     _elements = elements;

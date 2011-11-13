@@ -1,6 +1,7 @@
 package f9k.ops.commands;
 
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -9,6 +10,11 @@ public class write implements Command
   String _fmt;
   List<String> _vars;
 
+  public write(String fmt)
+  {
+    this(fmt, Collections.<String>emptyList());
+  }
+
   public write(String fmt, List<String> vars)
   {
     _fmt = fmt;
@@ -16,7 +22,7 @@ public class write implements Command
   }
 
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     String s = new String(_fmt);
 

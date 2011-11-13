@@ -13,7 +13,7 @@ public class bind implements Command
   }
 
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     Object value = (_value instanceof String) ? context.resolveValue((String)_value) : _value;
     context.setVar(_name, value);

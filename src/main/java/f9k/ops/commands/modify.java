@@ -17,7 +17,7 @@ public class modify implements Command
   }
 
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     Map<String, Object> values = new HashMap<String, Object>(_values);
     context.resolveValues(values);

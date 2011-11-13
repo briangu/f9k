@@ -11,7 +11,7 @@ public class remove implements Command
   }
 
   @Override
-  public void exec(MatchContext context)
+  public void exec(CommandContext context)
   {
     context.remove(_idx);
   }
