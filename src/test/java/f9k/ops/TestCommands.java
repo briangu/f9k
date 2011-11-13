@@ -26,7 +26,7 @@ public class TestCommands extends TestCase
 
     testContext.OPS.insert(new MemoryElement("start"));
 
-    testContext.OPS.run();
+    testContext.OPS.run(1);
   }
 
   private TestContext createContext()

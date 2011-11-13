@@ -107,6 +107,7 @@ public class OPS
       PreparedRule preparedRule = new PreparedRule();
       preparedRule.Rule = rule;
       preparedRule.Specificity = computeSpecificity(rule);
+      _preparedRules.add(preparedRule);
     }
 
     Collections.sort(_preparedRules, new Comparator<PreparedRule>()
