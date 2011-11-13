@@ -6,6 +6,12 @@ public class bind implements Command
   String _name;
   Object _value;
 
+  public bind(String name, Object value)
+  {
+    _name = name;
+    _value = value;
+  }
+
   @Override
   public void exec(MatchContext context)
   {
