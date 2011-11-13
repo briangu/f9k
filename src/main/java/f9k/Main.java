@@ -96,6 +96,8 @@ public class Main
 
     ops.make(new MemoryElement("goal", "type", "generate"));
     ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "verb.tense", Tense.PAST, "object", "article"));
+    ops.make(new MemoryElement("sphrase", "actor", "Joe", "verb", "comment on", "verb.tense", Tense.PAST, "object", "post"));
+    ops.make(new MemoryElement("sphrase", "actor", "John", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
 
     ops.addRule(createGenerateRule(nlgFactory, realiser, lexicon));
     ops.addRule(createGenerateStopRule());
