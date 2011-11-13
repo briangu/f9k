@@ -1,4 +1,4 @@
-package f9k;
+package f9k.ops;
 
 
 import gov.nih.nlm.nls.lexCheck.Lib.LexRecord;
@@ -35,7 +35,7 @@ import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.realiser.english.Realiser;
 
 
-public class TestMain
+public class TestSimpleNLG
 {
   static String DB_FILENAME = "/lexicon/lexAccess2011lite/data/HSqlDb/lexAccess2011.data";
 
