@@ -21,6 +21,8 @@ public class OPS
 
   private Map<String, MemoryElement> _templates = new HashMap<String, MemoryElement>();
 
+  private boolean _halt = false;
+
   public OPS create(
     Strategy strategy,
     List<Map<String, Object>> templates
@@ -29,19 +31,35 @@ public class OPS
     return new OPS();
   }
 
+  public void reset()
+  {
+    _halt = false;
+    _rules.clear();
+    _templates.clear();
+    _wm.clear();
+  }
+
+  public void halt()
+  {
+    _halt = true;
+  }
+
   public void literalize(MemoryElement template)
   {
     _templates.put(template.Type, template);
   }
 
-  public void make(MemoryElement element)
+  public MemoryElement make(MemoryElement element)
   {
     if (!_templates.containsKey(element.Type))
     {
       throw new IllegalArgumentException(String.format("memory element type %s not literalized", element.Type));
     }
 
-    _wm.add(_templates.get(element.Type).make(element.Values));
+    MemoryElement newElement = _templates.get(element.Type).make(element.Values);
+    _wm.add(newElement);
+
+    return newElement;
   }
 
   public void run()

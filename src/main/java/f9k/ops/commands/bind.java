@@ -9,7 +9,7 @@ public class bind implements Command
   @Override
   public void exec(MatchContext context)
   {
-    Object value = context.resolve(_value);
+    Object value = (_value instanceof String) ? context.resolveValue((String)_value) : _value;
     context.setVar(_name, value);
   }
 }

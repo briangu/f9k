@@ -19,7 +19,7 @@ public class make implements Command
   public void exec(MatchContext context)
   {
     Map<String, Object> values = new HashMap<String, Object>(_element.Values);
-    context.resolveValues(values);
+    values = context.resolveValues(values);
     context.make(new MemoryElement(_element.Type, values));
   }
 }
