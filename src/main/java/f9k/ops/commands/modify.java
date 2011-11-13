@@ -16,6 +16,27 @@ public class modify implements Command
     _values = values;
   }
 
+  public modify(int idx, Object... values)
+  {
+    _idx = idx;
+
+    _values = new HashMap<String, Object>();
+    if (values.length > 0)
+    {
+      if (values.length % 2 != 0)
+      {
+        throw new IllegalArgumentException("values must be in the form: key, value, key, value, ...");
+      }
+
+      for (int i = 0; i < values.length; i += 2)
+      {
+        String key = values[i].toString();
+        Object val = values[i+1];
+        _values.put(key, val);
+      }
+    }
+  }
+
   @Override
   public void exec(CommandContext context)
   {
