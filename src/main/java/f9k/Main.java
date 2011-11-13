@@ -91,26 +91,16 @@ public class Main
 
     OPS ops = new OPS();
 
-    ops.literalize(createAVOTemplate());
-    ops.literalize(createGoalTemplate());
+    ops.literalize(new MemoryElement("sphrase", "actor", null, "verb", null, "verb.tense", Tense.PRESENT, "object", null));
+    ops.literalize(new MemoryElement("goal", "type", null));
 
     ops.make(new MemoryElement("goal", "type", "generate"));
-    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "object", "article"));
+    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "verb.tense", Tense.PAST, "object", "article"));
 
     ops.addRule(createGenerateRule(nlgFactory, realiser, lexicon));
     ops.addRule(createGenerateStopRule());
 
     ops.run();
-  }
-
-  private static MemoryElement createAVOTemplate()
-  {
-    return new MemoryElement("sphrase", "actor", null, "verb", null, "verb.tense", Tense.PRESENT, "object", null);
-  }
-
-  private static MemoryElement createGoalTemplate()
-  {
-    return new MemoryElement("goal", "type", null);
   }
 
   private static Rule createGenerateRule(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
