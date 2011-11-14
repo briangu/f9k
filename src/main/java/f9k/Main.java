@@ -6,6 +6,7 @@ import f9k.ops.OPS;
 import f9k.ops.QueryElement;
 import f9k.ops.Rule;
 import f9k.ops.commands.Command;
+import f9k.ops.commands.ProductionSpec;
 import f9k.ops.commands.nlg;
 import f9k.ops.commands.nlg_agg;
 import f9k.ops.commands.remove;
@@ -14,23 +15,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import simplenlg.aggregation.Aggregator;
-import simplenlg.aggregation.BackwardConjunctionReductionRule;
-import simplenlg.aggregation.ClauseCoordinationRule;
-import simplenlg.aggregation.ForwardConjunctionReductionRule;
 import simplenlg.features.Tense;
 import simplenlg.framework.NLGFactory;
-import simplenlg.framework.PhraseElement;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.lexicon.NIHDBLexicon;
-import simplenlg.phrasespec.SPhraseSpec;
-import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.realiser.english.Realiser;
 
 
 public class Main
 {
   static String DB_FILENAME = "/lexicon/lexAccess2011lite/data/HSqlDb/lexAccess2011.data";
+
+  static Command _nlg;
+  static Command _nlgAgg;
+  static Command _remove;
 
   public static String getPwd()
   {
@@ -51,6 +49,10 @@ public class Main
     Lexicon lexicon = new NIHDBLexicon(getPwd() + DB_FILENAME);
     NLGFactory nlgFactory = new NLGFactory(lexicon);
     Realiser realiser = new Realiser(lexicon);
+
+    _nlg = new nlg(nlgFactory, realiser, lexicon);
+    _nlgAgg = new nlg_agg(nlgFactory, realiser, lexicon);
+    _remove = new remove();
 
     OPS ops = new OPS();
 
@@ -84,12 +86,12 @@ public class Main
     query.add(new QueryElement("goal", "type", "generate"));
     query.add(new QueryElement("sphrase", "actor", "$actor", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
 
-    List<Command> production = new ArrayList<Command>();
-//    production.add(new write("actor: {0} verb: {1} object: {2}", "$actor", "$verb", "$object"));
-    production.add(new nlg(nlgFactory, realiser, lexicon));
-    production.add(new remove(1));
+    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
+    productions.add(new ProductionSpec(new write("actor: {0} verb: {1} object: {2}"), new Object[] { "$actor", "$verb", "$object" }));
+    productions.add(new ProductionSpec(_nlg, new Object[] { "$actor", "$verb", "$verb.tense", "$object" }));
+    productions.add(new ProductionSpec(_remove, new Object[] { 1 }));
 
-    return new Rule("generate", query, production);
+    return new Rule("generate", query, productions);
   }
 
   private static Rule createAggregateCommonVerbObjectRule(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
@@ -99,12 +101,12 @@ public class Main
     query.add(new QueryElement("sphrase", "actor", "$actor1", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
     query.add(new QueryElement("sphrase", "actor", "$actor2", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
 
-    List<Command> production = new ArrayList<Command>();
-    production.add(new nlg_agg(nlgFactory, realiser, lexicon));
-    production.add(new remove(1));
-    production.add(new remove(2));
+    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
+    productions.add(new ProductionSpec(_nlgAgg, new Object[] { "$actor1", "$actor2", "$verb", "$verb.tense", "$object" }));
+    productions.add(new ProductionSpec(_remove, new Object[] { 1 }));
+    productions.add(new ProductionSpec(_remove, new Object[] { 2 }));
 
-    return new Rule("generate", query, production);
+    return new Rule("generate", query, productions);
   }
 
   private static Rule createGenerateStopRule()
@@ -112,9 +114,9 @@ public class Main
     List<QueryElement> query = new ArrayList<QueryElement>();
     query.add(new QueryElement("goal", "type", "generate"));
 
-    List<Command> production = new ArrayList<Command>();
-    production.add(new remove(0));
+    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
+    productions.add(new ProductionSpec(_remove, new Object[] { 0 }));
 
-    return new Rule("generate_stop", query, production);
+    return new Rule("generate_stop", query, productions);
   }
 }

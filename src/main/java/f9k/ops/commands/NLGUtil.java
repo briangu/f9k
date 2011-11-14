@@ -2,6 +2,7 @@ package f9k.ops.commands;
 
 
 import simplenlg.features.LexicalFeature;
+import simplenlg.features.Tense;
 import simplenlg.framework.NLGElement;
 import simplenlg.framework.WordElement;
 import simplenlg.lexicon.Lexicon;
@@ -9,6 +10,11 @@ import simplenlg.lexicon.Lexicon;
 
 public class NLGUtil
 {
+  public static Tense getTense(String tense)
+  {
+    return Tense.valueOf(tense.toUpperCase());
+  }
+
   public static boolean IsProper(Lexicon lexicon, Object obj)
   {
     boolean isProper;

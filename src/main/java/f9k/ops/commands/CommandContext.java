@@ -11,9 +11,7 @@ import java.util.Map;
 public class CommandContext
 {
   Map<String, Object> _vars;
-
   List<MemoryElement> _elements;
-
   OPS _ops;
 
   public CommandContext(OPS ops, List<MemoryElement> elements, Map<String, Object> vars)
@@ -86,8 +84,11 @@ public class CommandContext
     return resolved;
   }
 
-  public Object resolveValue(String varName)
+  public Object resolveValue(Object var)
   {
+    if (!(var instanceof String)) return var;
+
+    String varName = var.toString();
     if (!varName.startsWith("$")) return varName;
 
     if (!hasVar(varName))
@@ -102,13 +103,13 @@ public class CommandContext
     return _vars.containsKey(name);
   }
 
-  public void setVar(String name, Object val)
-  {
-    _vars.put(name, val);
-  }
-
   public Object getVar(String name)
   {
     return _vars.get(name);
+  }
+
+  public void setVar(String name, Object val)
+  {
+    _vars.put(name, val);
   }
 }

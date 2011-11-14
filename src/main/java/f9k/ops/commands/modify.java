@@ -7,41 +7,29 @@ import java.util.Map;
 
 public class modify implements Command
 {
-  Map<String, Object> _values;
-  int _idx;
-
-  public modify(int idx, Map<String, Object> values)
-  {
-    _idx = idx;
-    _values = values;
-  }
-
-  public modify(int idx, Object... values)
-  {
-    _idx = idx;
-
-    _values = new HashMap<String, Object>();
-    if (values.length > 0)
-    {
-      if (values.length % 2 != 0)
-      {
-        throw new IllegalArgumentException("values must be in the form: key, value, key, value, ...");
-      }
-
-      for (int i = 0; i < values.length; i += 2)
-      {
-        String key = values[i].toString();
-        Object val = values[i+1];
-        _values.put(key, val);
-      }
-    }
-  }
-
   @Override
-  public void exec(CommandContext context)
+  public void exec(CommandContext context, Object[] args)
   {
-    Map<String, Object> values = new HashMap<String, Object>(_values);
-    context.resolveValues(values);
-    context.modify(_idx, values);
+    if (((args.length - 1) % 2) != 0)
+    {
+      throw new IllegalArgumentException("values must be in the form: idx key value key value ...");
+    }
+    if (!(args[0] instanceof Integer))
+    {
+      throw new IllegalArgumentException("idx must be an integer");
+    }
+
+    int idx = (Integer)args[0];
+
+    Map<String, Object> values = new HashMap<String, Object>();
+
+    for (int i = 1; i < args.length; i += 2)
+    {
+      String key = args[i].toString();
+      Object val = args[i+1];
+      values.put(key, val);
+    }
+
+    context.modify(idx, values);
   }
 }

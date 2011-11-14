@@ -1,11 +1,9 @@
 package f9k.ops.commands;
 
 
-import java.util.List;
 import simplenlg.features.Feature;
-import simplenlg.features.LexicalFeature;
+import simplenlg.features.Tense;
 import simplenlg.framework.NLGFactory;
-import simplenlg.framework.WordElement;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.phrasespec.NPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
@@ -27,20 +25,26 @@ public class nlg implements Command
   }
 
   @Override
-  public void exec(CommandContext context)
+  public void exec(CommandContext context, Object[] args)
   {
-    NPPhraseSpec actor = _nlgFactory.createNounPhrase(context.getVar("$actor"));
-    VPPhraseSpec verb = _nlgFactory.createVerbPhrase(context.getVar("$verb"));
-    NPPhraseSpec object = _nlgFactory.createNounPhrase(context.getVar("$object"));
+    if (args.length != 4)
+    {
+      throw new IllegalArgumentException("argument count is incorrect: " + args.length);
+    }
 
-    boolean isProper = NLGUtil.IsProper(_lexicon, context.getVar("$object"));
+    NPPhraseSpec actor = _nlgFactory.createNounPhrase(args[0]);
+    VPPhraseSpec verb = _nlgFactory.createVerbPhrase(args[1]);
+    NPPhraseSpec object = _nlgFactory.createNounPhrase(args[3]);
+    Tense tense = NLGUtil.getTense(args[2].toString());
+
+    boolean isProper = NLGUtil.IsProper(_lexicon, args[3]);
     if (!isProper) object.setSpecifier("the");
 
     SPhraseSpec clause = _nlgFactory.createClause();
     clause.setSubject(actor);
     clause.setVerb(verb);
     clause.setObject(object);
-    clause.setFeature(Feature.TENSE, context.getVar("$verb.tense"));
+    clause.setFeature(Feature.TENSE, tense);
 
     System.out.println(_realiser.realise(clause).getRealisation());
   }

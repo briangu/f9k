@@ -1,39 +1,23 @@
 package f9k.ops.commands;
 
 
-import java.util.Collections;
-import java.util.List;
-
-
 public class write implements Command
 {
   String _fmt;
-  String[] _vars;
 
   public write(String fmt)
   {
-    this(fmt, new String[0]);
-  }
-
-  public write(String fmt, String... vars)
-  {
     _fmt = fmt;
-    _vars = vars;
   }
 
   @Override
-  public void exec(CommandContext context)
+  public void exec(CommandContext context, Object[] args)
   {
     String s = new String(_fmt);
 
-    for (int i = 0; i < _vars.length; i++)
+    for (int i = 0; i < args.length; i++)
     {
-      String name = _vars[i];
-      if (!context.hasVar(name))
-      {
-        throw new IllegalArgumentException("unknown var name: " + name);
-      }
-      String val = context.getVar(name).toString();
+      String val = args[i].toString();
       s = s.replace(String.format("{%d}", i), val);
     }
 

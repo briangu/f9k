@@ -1,8 +1,8 @@
 package f9k.ops;
 
 
-import f9k.ops.commands.Command;
 import f9k.ops.commands.CommandContext;
+import f9k.ops.commands.ProductionSpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,9 +77,16 @@ public class OPS
 
       CommandContext context = new CommandContext(this, match.Elements, match.Vars);
 
-      for (Command cmd : match.Rule.Production)
+      for (ProductionSpec production : match.Rule.Productions)
       {
-        cmd.exec(context);
+        Object[] args = new Object[production.Params.length];
+
+        for (int i = 0; i < args.length; i++)
+        {
+          args[i] = context.resolveValue(production.Params[i]);
+        }
+
+        production.Command.exec(context, args);
       }
     }
   }

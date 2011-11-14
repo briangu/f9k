@@ -2,15 +2,12 @@ package f9k.ops.commands;
 
 
 import f9k.ops.MemoryElement;
-import java.util.List;
 import simplenlg.aggregation.ClauseCoordinationRule;
 import simplenlg.features.Feature;
 import simplenlg.features.LexicalFeature;
 import simplenlg.features.Tense;
-import simplenlg.framework.CoordinatedPhraseElement;
 import simplenlg.framework.NLGElement;
 import simplenlg.framework.NLGFactory;
-import simplenlg.framework.WordElement;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.phrasespec.NPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
@@ -32,15 +29,19 @@ public class nlg_agg implements Command
   }
 
   @Override
-  public void exec(CommandContext context)
+  public void exec(CommandContext context, Object[] args)
   {
-    NPPhraseSpec actor1 = _nlgFactory.createNounPhrase(context.getVar("$actor1"));
-    NPPhraseSpec actor2 = _nlgFactory.createNounPhrase(context.getVar("$actor2"));
-    VPPhraseSpec vp1 = _nlgFactory.createVerbPhrase(context.getVar("$verb"));
-    NPPhraseSpec op1 = _nlgFactory.createNounPhrase(context.getVar("$object"));
-    Tense tense = (Tense) context.getVar("$verb.tense");
+    if (args.length != 5)
+    {
+      throw new IllegalArgumentException("argument count is incorrect: " + args.length);
+    }
+    NPPhraseSpec actor1 = _nlgFactory.createNounPhrase(args[0]);
+    NPPhraseSpec actor2 = _nlgFactory.createNounPhrase(args[1]);
+    VPPhraseSpec vp1 = _nlgFactory.createVerbPhrase(args[2]);
+    NPPhraseSpec op1 = _nlgFactory.createNounPhrase(args[4]);
+    Tense tense = NLGUtil.getTense(args[3].toString());
 
-    boolean isProper = NLGUtil.IsProper(_lexicon, context.getVar("$object"));
+    boolean isProper = NLGUtil.IsProper(_lexicon, args[4]);
     if (!isProper) op1.setSpecifier("the");
 
     SPhraseSpec s1 = _nlgFactory.createClause(actor1, vp1, op1);
@@ -58,10 +59,10 @@ public class nlg_agg implements Command
             "actor",
             sresult.getSubject(),
             "verb",
-            context.getVar("$verb"),
+            args[2],
             "verb.tense",
             tense,
             "object",
-            context.getVar("$object")));
+            args[4]));
   }
 }

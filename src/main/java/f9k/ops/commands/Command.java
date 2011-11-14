@@ -3,5 +3,5 @@ package f9k.ops.commands;
 
 public interface Command
 {
-  void exec(CommandContext context);
+  void exec(CommandContext context, Object[] args);
 }

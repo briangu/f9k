@@ -3,16 +3,18 @@ package f9k.ops.commands;
 
 public class remove implements Command
 {
-  int _idx;
-
-  public remove(int idx)
-  {
-    _idx = idx;
-  }
-
   @Override
-  public void exec(CommandContext context)
+  public void exec(CommandContext context, Object[] args)
   {
-    context.remove(_idx);
+    if (args.length == 0)
+    {
+      throw new IllegalArgumentException("not enough arguments specified");
+    }
+    if (!(args[0] instanceof Integer))
+    {
+      throw new IllegalArgumentException("argument should be an Integer");
+    }
+    int idx = (Integer)args[0];
+    context.remove(idx);
   }
 }
