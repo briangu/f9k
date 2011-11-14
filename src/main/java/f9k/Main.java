@@ -46,23 +46,6 @@ public class Main
     return "";
   }
 
-  static PhraseElement man, woman, dog, boy, np4, np5, np6, proTest1, proTest2;
-
-  /** The salacious. */
-  static PhraseElement beautiful, stunning, salacious;
-
-  /** The under the table. */
-  static PhraseElement onTheRock, behindTheCurtain, inTheRoom, underTheTable;
-
-  /** The say. */
-  static VPPhraseSpec kick, kiss, walk, talk, getUp, fallDown, give, say;
-
-  static SPhraseSpec s1, s2, s3, s4, s5, s6;
-  static Aggregator aggregator;
-  static ClauseCoordinationRule coord;
-  static ForwardConjunctionReductionRule fcr;
-  static BackwardConjunctionReductionRule bcr;
-
   public static void main(String[] args)
   {
     Lexicon lexicon = new NIHDBLexicon(getPwd() + DB_FILENAME);

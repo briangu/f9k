@@ -13,10 +13,8 @@ import java.util.Map;
 public class OPS
 {
   private List<MemoryElement> _wm = new ArrayList<MemoryElement>();
-
   private List<Rule> _rules = new ArrayList<Rule>();
   private List<PreparedRule> _preparedRules = new ArrayList<PreparedRule>();
-
   private Map<String, MemoryElement> _templates = new HashMap<String, MemoryElement>();
 
   private boolean _halt = false;
