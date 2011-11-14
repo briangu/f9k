@@ -40,13 +40,8 @@ public class nlg_agg implements Command
     NPPhraseSpec op1 = _nlgFactory.createNounPhrase(context.getVar("$object"));
     Tense tense = (Tense) context.getVar("$verb.tense");
 
-    WordElement objWord = _lexicon.getWord(context.getVar("$object").toString());
-    Object feature = objWord.getFeature(LexicalFeature.PROPER);
-    boolean isProper = feature == null ? false : (Boolean)feature;
-    if (!isProper)
-    {
-      op1.setSpecifier("the");
-    }
+    boolean isProper = NLGUtil.IsProper(_lexicon, context.getVar("$object"));
+    if (!isProper) op1.setSpecifier("the");
 
     SPhraseSpec s1 = _nlgFactory.createClause(actor1, vp1, op1);
     s1.setFeature(Feature.TENSE, tense);
@@ -55,13 +50,18 @@ public class nlg_agg implements Command
     NLGElement result = new ClauseCoordinationRule().apply(s1, s2);
 
     SPhraseSpec sresult = (SPhraseSpec)result;
-    NLGElement np2 = sresult.getSubject();
+    NLGElement op2 = sresult.getObject();
+    op2.setFeature(LexicalFeature.PROPER, isProper);
     context.make(
         new MemoryElement(
             "sphrase",
-            "actor", np2,
-            "verb", context.getVar("$verb"),
-            "verb.tense", tense,
-            "object", context.getVar("$object")));
+            "actor",
+            sresult.getSubject(),
+            "verb",
+            context.getVar("$verb"),
+            "verb.tense",
+            tense,
+            "object",
+            context.getVar("$object")));
   }
 }

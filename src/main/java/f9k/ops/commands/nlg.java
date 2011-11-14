@@ -33,15 +33,8 @@ public class nlg implements Command
     VPPhraseSpec verb = _nlgFactory.createVerbPhrase(context.getVar("$verb"));
     NPPhraseSpec object = _nlgFactory.createNounPhrase(context.getVar("$object"));
 
-    WordElement objWord = _lexicon.getWord(context.getVar("$object").toString());
-//    List<WordElement> objWords = _lexicon.getWords(context.getVar("$object").toString());
-
-    Object feature = objWord.getFeature(LexicalFeature.PROPER);
-    boolean isProper = feature == null ? false : (Boolean)feature;
-    if (!isProper)
-    {
-      object.setSpecifier("the");
-    }
+    boolean isProper = NLGUtil.IsProper(_lexicon, context.getVar("$object"));
+    if (!isProper) object.setSpecifier("the");
 
     SPhraseSpec clause = _nlgFactory.createClause();
     clause.setSubject(actor);
