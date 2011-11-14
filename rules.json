@@ -8,12 +8,28 @@
   ["make", "sphrase", {"actor": "Larry"}, {"verb": "connect to"}, {"verb.tense": "past"}, {"object": "Joe"}],
   ["make", "sphrase", {"actor": "Sally"}, {"verb": "connect to"}, {"verb.tense": "past"}, {"object": "Joe"}],
   ["p", "generate",
-    [ ["goal", {"type": "generate"}],
+    [
+      ["goal", {"type": "generate"}],
       ["sphrase", {"actor": "$actor"}, {"verb": "$verb"}, {"verb.tense": "$verb.tense"}, {"object": "$object"} ]
     ],
     [
       ["nlg", "$actor", "$verb", "$verb.tense", "$object"],
       ["remove", 1]
     ]
+  ],
+  ["p", "generate_agg",
+    [
+      ["goal", {"type": "generate"}],
+      ["sphrase", {"actor": "$actor1"}, {"verb": "$verb"}, {"verb.tense": "$verb.tense"}, {"object": "$object"} ],
+      ["sphrase", {"actor": "$actor2"}, {"verb": "$verb"}, {"verb.tense": "$verb.tense"}, {"object": "$object"} ]
+    ],
+    [
+      ["nlg_agg", "$actor1", "$actor2", "$verb", "$verb.tense", "$object"],
+      ["remove", 1],
+      ["remove", 2]
+    ]],
+  ["p", "generate_stop",
+    [ ["goal", {"type": "generate"}] ],
+    [ ["remove", 0] ]
   ]
 ]
