@@ -169,6 +169,7 @@ public class OPS
 
         for (MemoryElement me : _wm)
         {
+          if (elements.contains(me)) continue;
           haveMatch = compare(qe, me, vars);
           if (haveMatch)
           {

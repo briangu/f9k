@@ -157,6 +157,7 @@ public class TestSimpleNLG
     System.out.println(realiser.realiseSentence(p));
 
     testAgg(nlgFactory, realiser);
+    testAgg2(nlgFactory, realiser);
     testMe(nlgFactory, realiser);
 
 //    test1(nlgFactory, realiser);
@@ -196,6 +197,24 @@ public class TestSimpleNLG
     s2.setFeature(Feature.TENSE, Tense.PAST);
     NLGElement result = new ClauseCoordinationRule().apply(s1, s2);
     System.out.println(realiser.realiseSentence(result));
+  }
+
+  private static void testAgg2(NLGFactory nlgFactory, Realiser realiser)
+  {
+    SPhraseSpec s1 = nlgFactory.createClause("John", "connected to", "Joe");
+    s1.setFeature(Feature.TENSE, Tense.PAST);
+    SPhraseSpec s2 = nlgFactory.createClause("Larry", "connected to", "Joe");
+    s2.setFeature(Feature.TENSE, Tense.PAST);
+    NLGElement result = new ClauseCoordinationRule().apply(s1, s2);
+
+    SPhraseSpec sresult = (SPhraseSpec)result;
+    CoordinatedPhraseElement np2 = (CoordinatedPhraseElement) sresult.getSubject();
+    VPPhraseSpec vp2 = (VPPhraseSpec) sresult.getVerbPhrase();
+    NPPhraseSpec op2 = (NPPhraseSpec) sresult.getObject();
+
+    SPhraseSpec s3 = nlgFactory.createClause(np2, vp2, op2);
+
+    System.out.println(realiser.realiseSentence(s3));
   }
 
   private static void test1(NLGFactory nlgFactory, Realiser realiser)

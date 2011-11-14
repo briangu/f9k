@@ -4,45 +4,25 @@ package f9k;
 import f9k.ops.MemoryElement;
 import f9k.ops.OPS;
 import f9k.ops.QueryElement;
-import f9k.ops.QueryPair;
 import f9k.ops.Rule;
 import f9k.ops.commands.Command;
-import f9k.ops.commands.CommandContext;
 import f9k.ops.commands.nlg;
+import f9k.ops.commands.nlg_agg;
 import f9k.ops.commands.remove;
 import f9k.ops.commands.write;
-import gov.nih.nlm.nls.lexCheck.Lib.LexRecord;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import simplenlg.aggregation.Aggregator;
 import simplenlg.aggregation.BackwardConjunctionReductionRule;
 import simplenlg.aggregation.ClauseCoordinationRule;
 import simplenlg.aggregation.ForwardConjunctionReductionRule;
-import simplenlg.features.Feature;
-import simplenlg.features.Gender;
-import simplenlg.features.InterrogativeType;
-import simplenlg.features.LexicalFeature;
 import simplenlg.features.Tense;
-import simplenlg.framework.CoordinatedPhraseElement;
-import simplenlg.framework.DocumentElement;
-import simplenlg.framework.InflectedWordElement;
-import simplenlg.framework.LexicalCategory;
-import simplenlg.framework.NLGElement;
 import simplenlg.framework.NLGFactory;
 import simplenlg.framework.PhraseElement;
-import simplenlg.framework.StringElement;
-import simplenlg.framework.WordElement;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.lexicon.NIHDBLexicon;
-import simplenlg.phrasespec.AdjPhraseSpec;
-import simplenlg.phrasespec.AdvPhraseSpec;
-import simplenlg.phrasespec.NPPhraseSpec;
-import simplenlg.phrasespec.PPPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
 import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.realiser.english.Realiser;
@@ -98,8 +78,10 @@ public class Main
     ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "verb.tense", Tense.PAST, "object", "article"));
     ops.make(new MemoryElement("sphrase", "actor", "Joe", "verb", "comment on", "verb.tense", Tense.PAST, "object", "post"));
     ops.make(new MemoryElement("sphrase", "actor", "John", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
+    ops.make(new MemoryElement("sphrase", "actor", "Larry", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
 
     ops.addRule(createGenerateRule(nlgFactory, realiser, lexicon));
+    ops.addRule(createAggregateCommonVerbObjectRule(nlgFactory, realiser, lexicon));
     ops.addRule(createGenerateStopRule());
 
     ops.run();
@@ -112,9 +94,24 @@ public class Main
     query.add(new QueryElement("sphrase", "actor", "$actor", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
 
     List<Command> production = new ArrayList<Command>();
-    production.add(new write("actor: {0} verb: {1} object: {2}", "$actor", "$verb", "$object"));
+//    production.add(new write("actor: {0} verb: {1} object: {2}", "$actor", "$verb", "$object"));
     production.add(new nlg(nlgFactory, realiser, lexicon));
     production.add(new remove(1));
+
+    return new Rule("generate", query, production);
+  }
+
+  private static Rule createAggregateCommonVerbObjectRule(NLGFactory nlgFactory, Realiser realiser, Lexicon lexicon)
+  {
+    List<QueryElement> query = new ArrayList<QueryElement>();
+    query.add(new QueryElement("goal", "type", "generate"));
+    query.add(new QueryElement("sphrase", "actor", "$actor1", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
+    query.add(new QueryElement("sphrase", "actor", "$actor2", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
+
+    List<Command> production = new ArrayList<Command>();
+    production.add(new nlg_agg(nlgFactory, realiser, lexicon));
+    production.add(new remove(1));
+    production.add(new remove(2));
 
     return new Rule("generate", query, production);
   }
