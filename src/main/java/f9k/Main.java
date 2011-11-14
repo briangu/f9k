@@ -75,10 +75,18 @@ public class Main
     ops.literalize(new MemoryElement("goal", "type", null));
 
     ops.make(new MemoryElement("goal", "type", "generate"));
+
     ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "verb.tense", Tense.PAST, "object", "article"));
     ops.make(new MemoryElement("sphrase", "actor", "Joe", "verb", "comment on", "verb.tense", Tense.PAST, "object", "post"));
+
     ops.make(new MemoryElement("sphrase", "actor", "John", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
     ops.make(new MemoryElement("sphrase", "actor", "Larry", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
+    ops.make(new MemoryElement("sphrase", "actor", "Sally", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
+
+//    ops.make(new MemoryElement("sphrase", "actor", "Robert", "verb", "connect to", "verb.tense", Tense.PRESENT, "object", "Joe"));
+
+//    ops.make(new MemoryElement("sphrase", "actor", "Robert", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Mary"));
+//    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Mary"));
 
     ops.addRule(createGenerateRule(nlgFactory, realiser, lexicon));
     ops.addRule(createAggregateCommonVerbObjectRule(nlgFactory, realiser, lexicon));
