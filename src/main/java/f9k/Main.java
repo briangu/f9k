@@ -4,7 +4,6 @@ package f9k;
 import f9k.ops.MemoryElement;
 import f9k.ops.OPS;
 import f9k.ops.QueryElement;
-import f9k.ops.QueryPair;
 import f9k.ops.Rule;
 import f9k.ops.commands.Command;
 import f9k.ops.commands.ProductionSpec;
@@ -14,7 +13,6 @@ import f9k.ops.commands.remove;
 import f9k.ops.commands.write;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -38,10 +36,6 @@ public class Main
 {
   static String DB_FILENAME = "/lexicon/lexAccess2011lite/data/HSqlDb/lexAccess2011.data";
 
-  static Command _nlg;
-  static Command _nlgAgg;
-  static Command _remove;
-
   static Lexicon _lexicon;
   static NLGFactory _nlgFactory;
   static Realiser _realiser;
@@ -60,6 +54,8 @@ public class Main
     return "";
   }
 
+  static Map<String, Command> _registeredCommands = new HashMap<String, Command>();
+
   public static void main(String[] args)
       throws Exception
   {
@@ -67,9 +63,9 @@ public class Main
     _nlgFactory = new NLGFactory(_lexicon);
     _realiser = new Realiser(_lexicon);
 
-    _nlg = new nlg(_nlgFactory, _realiser, _lexicon);
-    _nlgAgg = new nlg_agg(_nlgFactory, _realiser, _lexicon);
-    _remove = new remove();
+    registerCommand("nlg", new nlg(_nlgFactory, _realiser, _lexicon));
+    registerCommand("nlgAgg", new nlg_agg(_nlgFactory, _realiser, _lexicon));
+    registerCommand("remove", new remove());
 
     if (args.length > 0)
     {
@@ -78,12 +74,27 @@ public class Main
       {
         System.out.println("file not found: " + args[0]);
       }
-      processOPSFile(file);
+      OPS ops = processOPSFile(file);
+      ops.run();
     }
     else
     {
       runSample();
     }
+  }
+
+  private static void registerCommand(String name, Command command)
+  {
+    _registeredCommands.put(name, command);
+  }
+
+  private static Command getCommand(String name)
+  {
+    if (!_registeredCommands.containsKey(name))
+    {
+      throw new IllegalArgumentException(String.format("command %s not found"));
+    }
+    return _registeredCommands.get(name);
   }
 
   private static OPS processOPSFile(File file)
@@ -100,7 +111,9 @@ public class Main
     {
       throw new IllegalArgumentException("missing ops section");
     }
+
     JSONArray arr = obj.getJSONArray("ops");
+
     for (int i = 0; i < arr.length(); i++)
     {
       JSONArray statement = arr.getJSONArray(i);
@@ -113,7 +126,6 @@ public class Main
       if (cmd.equals("literalize"))
       {
         String recordName = statement.getString(1);
-
         Map<String, Object> values = new HashMap<String, Object>();
         for (int j = 2; j < statement.length(); j++)
         {
@@ -139,27 +151,11 @@ public class Main
       else if (cmd.equals("make"))
       {
         String recordName = statement.getString(1);
-
         Map<String, Object> values = new HashMap<String, Object>();
-        for (int j = 2; j < statement.length(); j++)
+        for (int j = 2; j < statement.length(); j += 2)
         {
-          Object field = statement.get(j);
-          if (field instanceof String)
-          {
-            values.put(field.toString(), null);
-          }
-          else if (field instanceof JSONObject)
-          {
-            JSONObject fieldObj = (JSONObject)field;
-            Iterator<String> keys = fieldObj.keys();
-            while (keys.hasNext())
-            {
-              String key = keys.next();
-              values.put(key, fieldObj.get(key));
-            }
-          }
+          values.put(statement.getString(j), statement.get(j+1));
         }
-
         ops.make(new MemoryElement(recordName, values));
       }
       else if (cmd.equals("p"))
@@ -172,26 +168,29 @@ public class Main
         {
           JSONArray matcher = list.getJSONArray(j);
           String recordName = matcher.getString(0);
-          Object[] values = parseValues(1, statement);
+          Object[] values = sublist(1, matcher);
           query.add(new QueryElement(recordName, values));
         }
-        query.add(new QueryElement("goal", "type", "generate"));
-        query.add(new QueryElement("sphrase", "actor", "$actor", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
-
-        list = statement.getJSONArray(3);
-
-        Map<String, Object> values = parseKeyValues(2, statement);
 
         List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
+        list = statement.getJSONArray(3);
+        for (int j = 0; j < list.length(); j++)
+        {
+          JSONArray production = list.getJSONArray(j);
+          String commandName = production.getString(0);
+          Command command = getCommand(commandName);
+          Object[] params = sublist(1, production);
+          productions.add(new ProductionSpec(command, params));
+        }
 
-
+        ops.addRule(new Rule(productionName, query, productions));
       }
     }
 
     return ops;
   }
 
-  private static Object[] parseValues(int startIdx, JSONArray arr)
+  private static Object[] sublist(int startIdx, JSONArray arr)
       throws JSONException
   {
     Object[] objects = new Object[arr.length() - startIdx];
@@ -200,49 +199,6 @@ public class Main
       objects[j] = arr.get(i);
     }
     return objects;
-  }
-
-  private static Map<String, Object> parseQueryPairs(int startIdx, JSONArray arr)
-      throws JSONException
-  {
-    List<QueryPair> values = new ArrayList<QueryPair>();
-    for (int j = startIdx; j < arr.length(); j++)
-    {
-      Object field = arr.get(j);
-      JSONObject fieldObj = (JSONObject)field;
-      Iterator<String> keys = fieldObj.keys();
-      while (keys.hasNext())
-      {
-        String key = keys.next();
-        values.put(key, fieldObj.get(key));
-      }
-    }
-    return values;
-  }
-
-  private static Map<String, Object> parseKeyValues(int startIdx, JSONArray arr)
-      throws JSONException
-  {
-    Map<String, Object> values = new HashMap<String, Object>();
-    for (int j = startIdx; j < arr.length(); j++)
-    {
-      Object field = arr.get(j);
-      if (field instanceof String)
-      {
-        values.put(field.toString(), null);
-      }
-      else if (field instanceof JSONObject)
-      {
-        JSONObject fieldObj = (JSONObject)field;
-        Iterator<String> keys = fieldObj.keys();
-        while (keys.hasNext())
-        {
-          String key = keys.next();
-          values.put(key, fieldObj.get(key));
-        }
-      }
-    }
-    return values;
   }
 
   public static JSONObject readJSONFile(String path)
@@ -305,8 +261,8 @@ public class Main
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
     productions.add(new ProductionSpec(new write("actor: {0} verb: {1} object: {2}"), new Object[] { "$actor", "$verb", "$object" }));
-    productions.add(new ProductionSpec(_nlg, new Object[] { "$actor", "$verb", "$verb.tense", "$object" }));
-    productions.add(new ProductionSpec(_remove, new Object[] { 1 }));
+    productions.add(new ProductionSpec(getCommand("nlg"), new Object[] { "$actor", "$verb", "$verb.tense", "$object" }));
+    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 1 }));
 
     return new Rule("generate", query, productions);
   }
@@ -319,9 +275,9 @@ public class Main
     query.add(new QueryElement("sphrase", "actor", "$actor2", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(_nlgAgg, new Object[] { "$actor1", "$actor2", "$verb", "$verb.tense", "$object" }));
-    productions.add(new ProductionSpec(_remove, new Object[] { 1 }));
-    productions.add(new ProductionSpec(_remove, new Object[] { 2 }));
+    productions.add(new ProductionSpec(getCommand("nlgAgg"), new Object[] { "$actor1", "$actor2", "$verb", "$verb.tense", "$object" }));
+    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 1 }));
+    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 2 }));
 
     return new Rule("generate", query, productions);
   }
@@ -332,7 +288,7 @@ public class Main
     query.add(new QueryElement("goal", "type", "generate"));
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(_remove, new Object[] { 0 }));
+    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 0 }));
 
     return new Rule("generate_stop", query, productions);
   }
