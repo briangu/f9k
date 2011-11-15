@@ -40,25 +40,17 @@ public class Main
   static NLGFactory _nlgFactory;
   static Realiser _realiser;
 
-  public static String getPwd()
-  {
-    File file = new File(".");
-    try
-    {
-      return file.getCanonicalPath();
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
   static Map<String, Command> _registeredCommands = new HashMap<String, Command>();
 
   public static void main(String[] args)
       throws Exception
   {
+    if (args.length <= 0)
+    {
+      System.out.println("usage: <rules.json>");
+      return;
+    }
+
     _lexicon = new NIHDBLexicon(getPwd() + DB_FILENAME);
     _nlgFactory = new NLGFactory(_lexicon);
     _realiser = new Realiser(_lexicon);
@@ -67,20 +59,13 @@ public class Main
     registerCommand("nlgAgg", new nlg_agg(_nlgFactory, _realiser, _lexicon));
     registerCommand("remove", new remove());
 
-    if (args.length > 0)
+    File file = new File(args[0]);
+    if (!file.exists())
     {
-      File file = new File(args[0]);
-      if (!file.exists())
-      {
-        System.out.println("file not found: " + args[0]);
-      }
-      OPS ops = processOPSFile(file);
-      ops.run();
+      System.out.println("file not found: " + args[0]);
     }
-    else
-    {
-      runSample();
-    }
+    OPS ops = processOPSFile(file);
+    ops.run();
   }
 
   private static void registerCommand(String name, Command command)
@@ -225,71 +210,17 @@ public class Main
     }
   }
 
-  private static void runSample()
+  public static String getPwd()
   {
-    OPS ops = new OPS();
-
-    ops.literalize(new MemoryElement("sphrase", "actor", null, "verb", null, "verb.tense", Tense.PRESENT, "object", null));
-    ops.literalize(new MemoryElement("goal", "type", null));
-
-    ops.make(new MemoryElement("goal", "type", "generate"));
-
-    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "share", "verb.tense", Tense.PAST, "object", "article"));
-    ops.make(new MemoryElement("sphrase", "actor", "Joe", "verb", "comment on", "verb.tense", Tense.PAST, "object", "post"));
-
-    ops.make(new MemoryElement("sphrase", "actor", "John", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
-    ops.make(new MemoryElement("sphrase", "actor", "Larry", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
-    ops.make(new MemoryElement("sphrase", "actor", "Sally", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Joe"));
-
-//    ops.make(new MemoryElement("sphrase", "actor", "Robert", "verb", "connect to", "verb.tense", Tense.PRESENT, "object", "Joe"));
-
-//    ops.make(new MemoryElement("sphrase", "actor", "Robert", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Mary"));
-//    ops.make(new MemoryElement("sphrase", "actor", "Brian", "verb", "connect to", "verb.tense", Tense.PAST, "object", "Mary"));
-
-    ops.addRule(createGenerateRule());
-    ops.addRule(createAggregateCommonVerbObjectRule());
-    ops.addRule(createGenerateStopRule());
-
-    ops.run();
-  }
-
-  private static Rule createGenerateRule()
-  {
-    List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", "type", "generate"));
-    query.add(new QueryElement("sphrase", "actor", "$actor", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
-
-    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(new write("actor: {0} verb: {1} object: {2}"), new Object[] { "$actor", "$verb", "$object" }));
-    productions.add(new ProductionSpec(getCommand("nlg"), new Object[] { "$actor", "$verb", "$verb.tense", "$object" }));
-    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 1 }));
-
-    return new Rule("generate", query, productions);
-  }
-
-  private static Rule createAggregateCommonVerbObjectRule()
-  {
-    List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", "type", "generate"));
-    query.add(new QueryElement("sphrase", "actor", "$actor1", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
-    query.add(new QueryElement("sphrase", "actor", "$actor2", "verb", "$verb", "verb.tense", "$verb.tense", "object", "$object"));
-
-    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(getCommand("nlgAgg"), new Object[] { "$actor1", "$actor2", "$verb", "$verb.tense", "$object" }));
-    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 1 }));
-    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 2 }));
-
-    return new Rule("generate", query, productions);
-  }
-
-  private static Rule createGenerateStopRule()
-  {
-    List<QueryElement> query = new ArrayList<QueryElement>();
-    query.add(new QueryElement("goal", "type", "generate"));
-
-    List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(getCommand("remove"), new Object[] { 0 }));
-
-    return new Rule("generate_stop", query, productions);
+    File file = new File(".");
+    try
+    {
+      return file.getCanonicalPath();
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
+    return "";
   }
 }

@@ -35,11 +35,12 @@ public class nlg_agg implements Command
     {
       throw new IllegalArgumentException("argument count is incorrect: " + args.length);
     }
+
     NPPhraseSpec actor1 = _nlgFactory.createNounPhrase(args[0]);
     NPPhraseSpec actor2 = _nlgFactory.createNounPhrase(args[1]);
     VPPhraseSpec vp1 = _nlgFactory.createVerbPhrase(args[2]);
-    NPPhraseSpec op1 = _nlgFactory.createNounPhrase(args[4]);
     Tense tense = NLGUtil.getTense(args[3].toString());
+    NPPhraseSpec op1 = _nlgFactory.createNounPhrase(args[4]);
 
     boolean isProper = NLGUtil.IsProper(_lexicon, args[4]);
     if (!isProper) op1.setSpecifier("the");
@@ -61,7 +62,7 @@ public class nlg_agg implements Command
             "verb",
             args[2],
             "verb.tense",
-            tense,
+            args[3],
             "object",
             args[4]));
   }
