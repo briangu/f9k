@@ -12,6 +12,8 @@
       ["make", "sphrase", "actor", "John", "verb", "connect to", "verb.tense", "past", "object", "Joe"],
       ["make", "sphrase", "actor", "Larry", "verb", "connect to", "verb.tense", "past", "object", "Joe"],
       ["make", "sphrase", "actor", "Sally", "verb", "connect to", "verb.tense", "past", "object", "Joe"],
+      ["make", "sphrase", "actor", "Mary", "verb", "connect to", "verb.tense", "past", "object", "Brian"],
+      ["make", "sphrase", "actor", "John", "verb", "connect to", "verb.tense", "past", "object", "Brian"],
       ["p", "generate",
         [
           ["goal", "type", "generate"],

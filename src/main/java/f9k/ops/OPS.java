@@ -17,6 +17,7 @@ public class OPS
   private List<PreparedRule> _preparedRules = new ArrayList<PreparedRule>();
   private Map<String, MemoryElement> _templates = new HashMap<String, MemoryElement>();
 
+  private boolean _debug = true;
   private boolean _halt = false;
 
   public void reset()
@@ -88,6 +89,16 @@ public class OPS
 
         production.Command.exec(context, args);
       }
+
+//      if (_debug) dumpWorkingMemory();
+    }
+  }
+
+  private void dumpWorkingMemory()
+  {
+    for (MemoryElement me : _wm)
+    {
+      System.out.println(me.toString());
     }
   }
 
@@ -175,9 +186,11 @@ public class OPS
         for (MemoryElement me : _wm)
         {
           if (elements.contains(me)) continue;
-          haveMatch = compare(qe, me, vars);
+          Map<String, Object> tmpVars = new HashMap<String, Object>(vars);
+          haveMatch = compare(qe, me, tmpVars);
           if (haveMatch)
           {
+            vars = tmpVars;
             elements.add(me);
             break;
           }

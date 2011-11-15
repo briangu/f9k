@@ -57,4 +57,17 @@ public class MemoryElement
     }
     return clone;
   }
+
+  public String toString()
+  {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(String.format("%s ", Type));
+    for (String key : Values.keySet())
+    {
+      sb.append(String.format("%s => %s\n", key, Values.get(key)));
+    }
+
+    return sb.toString();
+  }
 }
