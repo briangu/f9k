@@ -1,4 +1,4 @@
-package f9k.ops.commands;
+package f9k.ops;
 
 
 import simplenlg.features.LexicalFeature;

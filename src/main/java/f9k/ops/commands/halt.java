@@ -1,6 +1,10 @@
 package f9k.ops.commands;
 
 
+import f9k.ops.Command;
+import f9k.ops.CommandContext;
+
+
 public class halt implements Command
 {
   @Override

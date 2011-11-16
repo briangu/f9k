@@ -1,6 +1,9 @@
 package f9k.ops.commands;
 
 
+import f9k.ops.Command;
+import f9k.ops.CommandContext;
+import f9k.ops.NLGUtil;
 import simplenlg.features.Feature;
 import simplenlg.features.Tense;
 import simplenlg.framework.NLGFactory;

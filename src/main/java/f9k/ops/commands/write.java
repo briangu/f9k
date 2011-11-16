@@ -1,24 +1,23 @@
 package f9k.ops.commands;
 
 
+import f9k.ops.Command;
+import f9k.ops.CommandContext;
+
+
 public class write implements Command
 {
-  String _fmt;
-
-  public write(String fmt)
-  {
-    _fmt = fmt;
-  }
-
   @Override
   public void exec(CommandContext context, Object[] args)
   {
-    String s = new String(_fmt);
+    String fmt = args[0].toString();
 
-    for (int i = 0; i < args.length; i++)
+    String s = new String(fmt);
+
+    for (int i = 1; i < args.length; i++)
     {
       String val = args[i].toString();
-      s = s.replace(String.format("{%d}", i), val);
+      s = s.replace(String.format("{%d}", i-1), val);
     }
 
     System.out.println(s);

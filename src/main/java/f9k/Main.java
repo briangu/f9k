@@ -1,12 +1,16 @@
 package f9k;
 
 
+import f9k.ops.Command;
 import f9k.ops.MemoryElement;
 import f9k.ops.OPS;
+import f9k.ops.ProductionSpec;
 import f9k.ops.QueryElement;
 import f9k.ops.Rule;
-import f9k.ops.commands.Command;
-import f9k.ops.commands.ProductionSpec;
+import f9k.ops.commands.bind;
+import f9k.ops.commands.halt;
+import f9k.ops.commands.make;
+import f9k.ops.commands.modify;
 import f9k.ops.commands.nlg;
 import f9k.ops.commands.nlg_agg;
 import f9k.ops.commands.remove;
@@ -25,7 +29,6 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import simplenlg.features.Tense;
 import simplenlg.framework.NLGFactory;
 import simplenlg.lexicon.Lexicon;
 import simplenlg.lexicon.NIHDBLexicon;
@@ -58,6 +61,11 @@ public class Main
     registerCommand("nlg", new nlg(_nlgFactory, _realiser, _lexicon));
     registerCommand("nlgAgg", new nlg_agg(_nlgFactory, _realiser, _lexicon));
     registerCommand("remove", new remove());
+    registerCommand("write", new write());
+    registerCommand("bind", new bind());
+    registerCommand("halt", new halt());
+    registerCommand("make", new make());
+    registerCommand("modify", new modify());
 
     File file = new File(args[0]);
     if (!file.exists())
@@ -77,7 +85,7 @@ public class Main
   {
     if (!_registeredCommands.containsKey(name))
     {
-      throw new IllegalArgumentException(String.format("command %s not found"));
+      throw new IllegalArgumentException(String.format("command %s not found", name));
     }
     return _registeredCommands.get(name);
   }

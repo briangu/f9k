@@ -1,0 +1,41 @@
+{
+  "name": "repl",
+  "description": "simple repl",
+  "format": "compact",
+  "ops":
+    [
+      ["literalize", "goal", "type"],
+      ["literalize", "user", "name"],
+      ["make", "goal", "type", "greet"],
+      ["p", "greet",
+        [
+          ["goal", "type", "greet"],
+          ["user", "name", "$name"]
+        ],
+        [
+          ["write", "hello, {0}!", "$name"],
+          ["modify", 0, "type", "repl"]
+        ]
+      ],
+      ["p", "greet",
+        [
+          ["goal", "type", "greet"]
+        ],
+        [
+          ["write", "what's your name?"],
+          ["bind", "name", "@STDIN"],
+          ["make", "user", "name", "$name"]
+        ]
+      ],
+      ["p", "repl",
+        [
+          ["goal", "type", "repl"],
+          ["user", "name", "$name"]
+        ],
+        [
+          ["bind", "cmd", "@STDIN"],
+          ["write", "{0} said {1}", "$name", "$cmd"]
+        ]
+      ]
+    ]
+}

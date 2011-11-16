@@ -1,8 +1,6 @@
 package f9k.ops;
 
 
-import f9k.ops.commands.CommandContext;
-import f9k.ops.commands.ProductionSpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

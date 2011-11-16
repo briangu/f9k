@@ -1,6 +1,8 @@
 package f9k.ops.commands;
 
 
+import f9k.ops.Command;
+import f9k.ops.CommandContext;
 import java.util.HashMap;
 import java.util.Map;
 

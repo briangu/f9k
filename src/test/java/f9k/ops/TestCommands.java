@@ -1,7 +1,6 @@
 package f9k.ops;
 
 
-import f9k.ops.commands.ProductionSpec;
 import f9k.ops.commands.halt;
 import f9k.ops.commands.modify;
 import f9k.ops.commands.remove;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import junit.framework.TestCase;
-import simplenlg.features.Tense;
 
 
 public class TestCommands extends TestCase
@@ -98,7 +96,7 @@ public class TestCommands extends TestCase
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
     productions.add(new ProductionSpec(new remove(), 0));
-    productions.add(new ProductionSpec(new write("hello, {0}"), "$type"));
+    productions.add(new ProductionSpec(new write(), "hello, {0}", "$type"));
     productions.add(new ProductionSpec(new halt()));
 
     return new Rule("goal_remove_with_var", query, productions);
@@ -112,7 +110,7 @@ public class TestCommands extends TestCase
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
     productions.add(new ProductionSpec(new remove(), 0));
-    productions.add(new ProductionSpec(new write("the goal is {0} and the monkey action is also {0}"), "$type"));
+    productions.add(new ProductionSpec(new write(), "the goal is {0} and the monkey action is also {0}", "$type"));
     productions.add(new ProductionSpec(new halt()));
 
     return new Rule("goal_remove_with_two_var", query, productions);
@@ -124,7 +122,7 @@ public class TestCommands extends TestCase
     query.add(new QueryElement("start", Collections.<QueryPair>emptyList()));
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
-    productions.add(new ProductionSpec(new write("hello, world!")));
+    productions.add(new ProductionSpec(new write(), "hello, world!"));
     productions.add(new ProductionSpec(new halt()));
 
     return new Rule("write_hello_world", query, productions);
@@ -137,7 +135,7 @@ public class TestCommands extends TestCase
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
     productions.add(new ProductionSpec(new modify(), 0, "type", "eat"));
-    productions.add(new ProductionSpec(new write("the goal is remove and changing to eat")));
+    productions.add(new ProductionSpec(new write(), "the goal is remove and changing to eat"));
 
     return new Rule("goal_modify_goal_remove", query, productions);
   }
@@ -149,7 +147,7 @@ public class TestCommands extends TestCase
 
     List<ProductionSpec> productions = new ArrayList<ProductionSpec>();
     productions.add(new ProductionSpec(new modify(), 0, "action", "eat"));
-    productions.add(new ProductionSpec(new write("the monkey action was remove and changing to eat")));
+    productions.add(new ProductionSpec(new write(), "the monkey action was remove and changing to eat"));
 
     return new Rule("goal_modify_monkey_action", query, productions);
   }

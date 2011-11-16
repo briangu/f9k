@@ -85,7 +85,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>f9k.TestMain</mainClass>
+              <mainClass>f9k.Main</mainClass>
               <packageName>f9k</packageName>
             </manifest>
           </archive>
