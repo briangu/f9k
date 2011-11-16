@@ -5,36 +5,65 @@
   "ops":
     [
       ["literalize", "goal", "type"],
-      ["literalize", "user", "name"],
+      ["literalize", "actor", "name"],
+      ["literalize", "verb", "type"],
+      ["literalize", "object", "type"],
       ["make", "goal", "type", "greet"],
       ["p", "greet",
         [
           ["goal", "type", "greet"],
-          ["user", "name", "$name"]
+          ["actor", "name", "$name"]
         ],
         [
           ["write", "hello, {0}!", "$name"],
           ["modify", 0, "type", "repl"]
         ]
       ],
-      ["p", "greet",
+      ["p", "get_actor",
         [
           ["goal", "type", "greet"]
         ],
         [
           ["write", "what's your name?"],
           ["bind", "name", "@STDIN"],
-          ["make", "user", "name", "$name"]
+          ["make", "actor", "name", "$name"]
         ]
       ],
-      ["p", "repl",
+      ["p", "get_verb",
         [
           ["goal", "type", "repl"],
-          ["user", "name", "$name"]
+          ["actor", "name", "$name"]
         ],
         [
-          ["bind", "cmd", "@STDIN"],
-          ["write", "{0} said {1}", "$name", "$cmd"]
+          ["write", "what do you want to do?"],
+          ["bind", "verb", "@STDIN"],
+          ["make", "verb", "type", "$verb"]
+        ]
+      ],
+      ["p", "get_object",
+        [
+          ["goal", "type", "repl"],
+          ["actor", "name", "$actor"],
+          ["verb", "type", "$verb"]
+        ],
+        [
+          ["write", "what do you want to do it to?"],
+          ["bind", "object", "@STDIN"],
+          ["make", "object", "type", "$object"]
+        ]
+      ],
+      ["p", "nlg_gen",
+        [
+          ["goal", "type", "repl"],
+          ["actor", "name", "$actor"],
+          ["verb", "type", "$verb"],
+          ["object", "type", "$object"]
+        ],
+        [
+          ["nlg", "$actor", "$verb", "present", "$object"],
+          ["remove", 1],
+          ["remove", 2],
+          ["remove", 3]
         ]
       ]
     ]
