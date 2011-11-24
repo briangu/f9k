@@ -61,7 +61,6 @@
         ],
         [
           ["nlg", "$actor", "$verb", "present", "$object"],
-          ["remove", 1],
           ["remove", 2],
           ["remove", 3]
         ]
